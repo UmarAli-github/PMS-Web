@@ -2,6 +2,7 @@ import './globals.css';
 
 import type { Metadata } from 'next';
 
+import { RootLayout } from '@/layouts/root-layout';
 import { PropsWithChildren } from '@/types/common';
 
 export const metadata: Metadata = {
@@ -9,10 +10,8 @@ export const metadata: Metadata = {
   description: 'Booking and management system',
 };
 
-export const RootLayout = ({ children }: PropsWithChildren) => {
-  return (
-    <html lang="en">
-      <body className="antialiased">{children}</body>
-    </html>
-  );
+const Layout = ({ children }: PropsWithChildren) => {
+  return <RootLayout>{children}</RootLayout>;
 };
+
+export default Layout;
