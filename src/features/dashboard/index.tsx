@@ -1,17 +1,84 @@
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import dayjs from 'dayjs';
 
-import { OverviewTabContent } from './overview-tab-content';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { prisma } from '@/lib/db';
 
-export const Dashboard = () => {
+import { BookingsDataTable } from './bookings-data-table';
+
+export const Dashboard = async () => {
+  const bookings = await prisma.booking.findMany();
+  const totalRevenue = await prisma.booking.aggregate({
+    _sum: {
+      price: true,
+    },
+  });
+
+  const totalBookings = await prisma.booking.count();
+
+  const totalRooms = await prisma.room.count();
+
+  const todaysActiveBooking = await prisma.booking.findMany({
+    where: {
+      AND: [
+        {
+          from: {
+            lte: dayjs().endOf('day').toDate(),
+          },
+        },
+        {
+          to: {
+            gte: dayjs().startOf('day').toDate(),
+          },
+        },
+      ],
+    },
+  });
+
   return (
-    <Tabs defaultValue="overview" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        <TabsTrigger value="reports">Reports</TabsTrigger>
-        <TabsTrigger value="notifications">Notifications</TabsTrigger>
-      </TabsList>
-      <OverviewTabContent />
-    </Tabs>
+    <div defaultValue="booking" className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {totalRevenue._sum.price?.toString()}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Bookings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalBookings.toString()}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Rooms</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalRooms.toString()}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Todays Active Bookings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {todaysActiveBooking.length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <BookingsDataTable bookings={bookings} />
+    </div>
   );
 };

@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner';
 import { Branding } from '@/layouts/root-layout/branding';
 import { MainNav } from '@/layouts/root-layout/main-nav';
 import { RootLayoutProviders } from '@/layouts/root-layout/providers';
@@ -12,6 +13,7 @@ export const RootLayout = async ({ children }: RootLayoutProps) => {
     <html lang="en">
       <body className="antialiased">
         <RootLayoutProviders>
+          <Toaster />
           <div className="flex flex-col">
             <div className="fixed top-0 z-10 w-full border-b bg-background">
               <div className="flex h-16 items-center px-4">
