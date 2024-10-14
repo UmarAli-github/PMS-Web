@@ -15,6 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/utils/cn';
 
 import { BookingDialog } from './booking-dialog';
@@ -33,15 +38,15 @@ export const Bookings = ({ rooms, bookings }: BookingsProps) => {
     calenderStartRangeInitial
   );
   const bookingMap = useMemo(() => {
-    const map = new Map<string, boolean>();
+    const map = new Map<string, Booking>();
     bookings.forEach((booking) => {
       const key = `${dayjs(booking.from).format(FORMAT_DATE)}-${booking.roomId}`;
-      map.set(key, true);
+      map.set(key, booking);
       // also add the next days till booking.to
       const to = dayjs(booking.to);
       let current = dayjs(booking.from).add(1, 'day');
       while (current.isBefore(to, 'day')) {
-        map.set(`${current.format(FORMAT_DATE)}-${booking.roomId}`, true);
+        map.set(`${current.format(FORMAT_DATE)}-${booking.roomId}`, booking);
         current = current.add(1, 'day');
       }
     });
@@ -127,28 +132,55 @@ export const Bookings = ({ rooms, bookings }: BookingsProps) => {
           {rows?.map((room) => (
             <TableRow key={room.id}>
               <TableCell className="whitespace-nowrap">{room.name}</TableCell>
-              {columns.map((date) => (
-                <TableCell
-                  className="p-0"
-                  key={dayjs(date).format('DD/MM/YYYY')}
-                >
-                  <Button
-                    className={cn('size-full rounded-none', {
-                      'bg-destructive hover:bg-destructive': bookingMap.get(
-                        `${dayjs(date).format(FORMAT_DATE)}-${room.id}`
-                      ),
-                    })}
-                    variant="ghost"
-                    disabled={dayjs(date).isBefore(dayjs(), 'day')}
-                    onClick={() => handleSelectDate(date, room)}
+              {columns.map((date) => {
+                const currentBooking = bookingMap.get(
+                  `${dayjs(date).format(FORMAT_DATE)}-${room.id}`
+                );
+                return (
+                  <TableCell
+                    className="p-0"
+                    key={dayjs(date).format('DD/MM/YYYY')}
                   >
-                    <span className="sr-only">
-                      Book {room.name} on {dayjs(date).format('DD/MM')}
-                    </span>
-                    -
-                  </Button>
-                </TableCell>
-              ))}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          className={cn('size-full rounded-none', {
+                            'bg-destructive hover:bg-destructive':
+                              currentBooking,
+                          })}
+                          variant="ghost"
+                          disabled={dayjs(date).isBefore(dayjs(), 'day')}
+                          onClick={() => handleSelectDate(date, room)}
+                        >
+                          <span className="sr-only">
+                            Book {room.name} on {dayjs(date).format('DD/MM')}
+                          </span>
+                          -
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {currentBooking ? (
+                          <div>
+                            <div>{currentBooking?.name} booked this room</div>
+                            <div>
+                              from{' '}
+                              {dayjs(currentBooking.from).format(
+                                'MMM DD, YYYY'
+                              )}{' '}
+                              to{' '}
+                              {dayjs(currentBooking.to).format('MMM DD, YYYY')}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div>Available to book</div>
+                          </div>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                );
+              })}
             </TableRow>
           ))}
         </TableBody>

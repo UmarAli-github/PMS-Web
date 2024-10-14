@@ -2,11 +2,12 @@ import dayjs from 'dayjs';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
+import { sanitize } from '@/utils/sanitize';
 
 import { BookingsDataTable } from './bookings-data-table';
 
 export const Dashboard = async () => {
-  const bookings = await prisma.booking.findMany();
+  const bookings = await prisma.booking.findMany().then(sanitize);
   const totalRevenue = await prisma.booking.aggregate({
     _sum: {
       price: true,
