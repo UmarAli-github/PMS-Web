@@ -126,6 +126,21 @@ export const BookingsDataTable = ({ bookings }: BookingsDataTableProps) => {
         cell: ({ row }) => <div>{row.getValue('price')}</div>,
       },
       {
+        accessorKey: 'payment.total', // Adjust this to match your data structure
+        header: 'Total',
+        cell: ({ row }) => <div>{row.original.payment?.total || 'N/A'}</div>,
+      },
+      {
+        accessorKey: 'payment.card', // Adjust this to match your data structure
+        header: 'By Card',
+        cell: ({ row }) => <div>{row.original.payment?.card || 'N/A'}</div>,
+      },
+      {
+        accessorKey: 'payment.cash', // Adjust this to match your data structure
+        header: 'By Cash',
+        cell: ({ row }) => <div>{row.original.payment?.cash || 'N/A'}</div>,
+      },
+      {
         accessorKey: 'idType',
         header: 'ID Type',
         cell: ({ row }) => <div>{row.getValue('idType')}</div>,

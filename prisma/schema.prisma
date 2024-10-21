@@ -24,6 +24,7 @@ model Booking {
   id     Int      @id @default(autoincrement()) // Primary key
   room   Room     @relation(fields: [roomId], references: [id]) // Foreign key referring to rooms table
   roomId Int
+  payment  Payment? @relation // Optional relation to Payment, no need for fields and references here
   from   DateTime
   to     DateTime
   name   String   @db.VarChar(255)
@@ -32,6 +33,15 @@ model Booking {
   price  Decimal  @db.Decimal(10, 2) // Booking price
   idType IdType // Enum for ID type
   idNo   String   @db.VarChar(100)
+}
+
+model Payment {
+  booking   Booking   @relation(fields: [bookingId], references: [id]) // Foreign key references id in Booking model
+  bookingId Int @id
+  total  Decimal  @db.Decimal(10, 2) // Booking price
+  card  Decimal  @db.Decimal(10, 2) // Booking price
+  cash  Decimal  @db.Decimal(10, 2) // Booking price
+
 }
 
 enum Gender {

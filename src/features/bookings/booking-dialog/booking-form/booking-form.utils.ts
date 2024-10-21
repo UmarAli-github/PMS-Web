@@ -14,6 +14,11 @@ export const bookingFormSchema = z.object({
   price: z.coerce.number().positive().min(1),
   idType: z.enum(['cnic', 'driver_license', 'passport']),
   idNo: z.string(),
+  payment: z.object({
+    total: z.coerce.number().positive().min(1),
+    card: z.coerce.number().gt(-1),
+    cash: z.coerce.number().gt(-1),
+  }),
 });
 
 export type BookingFormSchema = z.infer<typeof bookingFormSchema>;

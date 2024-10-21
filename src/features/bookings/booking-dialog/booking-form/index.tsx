@@ -8,7 +8,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { createBookingAction } from '@/actions/bookings';
+import { FieldErrors } from 'react-hook-form';
+
+import { createBookingActionUpdated } from '@/actions/bookings';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { DatePickerWithInput } from '@/components/ui/date-picker-with-input';
@@ -30,6 +32,8 @@ import {
 } from '@/components/ui/select';
 
 import { BookingFormSchema, bookingFormSchema } from './booking-form.utils';
+import { Value } from '@radix-ui/react-select';
+import { useState } from 'react';
 
 interface BookingFormProps {
   userSelection: {
@@ -51,7 +55,7 @@ export const BookingForm = ({
     },
   });
   const addBookingMutation = useMutation({
-    mutationFn: createBookingAction,
+    mutationFn: createBookingActionUpdated,
     onSuccess: () => {
       router.refresh();
       toast.success('Booking created successfully');
@@ -64,14 +68,31 @@ export const BookingForm = ({
     },
   });
 
+  const [people, setPeople] = useState(1);
+
   const onSubmit = (values: BookingFormSchema) => {
-    addBookingMutation.mutate(values);
+    // Add 'people' to the 'values' object
+    const payload = { ...values, people };
+
+    // Now pass a single object to the mutation function
+    addBookingMutation.mutate(payload);
+  };
+
+  const onError = (errors: FieldErrors<BookingFormSchema>) => {
+    console.log('Validation errors:', errors);
+  };
+
+  const onChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPeople(Number(event.target.value));
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid grid-cols-2 gap-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, onError)}
+        className="space-y-8"
+      >
+        <div className="grid grid-cols-4 gap-4">
           <FormField
             control={form.control}
             name="room"
@@ -182,7 +203,26 @@ export const BookingForm = ({
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="room.capacity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Capacity ({people})</FormLabel>
+                <FormControl>
+                  <Input
+                    type="range"
+                    value={people}
+                    onChange={onChangeHandler}
+                    min={1}
+                    max={userSelection.room.capacity}
+                  />
+                </FormControl>
 
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="price"
@@ -195,6 +235,51 @@ export const BookingForm = ({
                     type="number"
                     {...field}
                   />
+                </FormControl>
+
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="payment.total"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Invoice (Total)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Invoice Total" type="number" {...field} />
+                </FormControl>
+
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="payment.card"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Invoice (Card)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Invoice Card" type="number" {...field} />
+                </FormControl>
+
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="payment.cash"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Invoice (Cash)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Invoice Cash" type="number" {...field} />
                 </FormControl>
 
                 <FormMessage />
