@@ -9,23 +9,23 @@ export const createBookingActionUpdated = async (
   const { room, payment, people, ...restValues } = values;
 
   // Check for overlapping bookings
-  const overlappingBooking = await prisma.booking.findFirst({
-    where: {
-      roomId: room.id,
-      AND: [
-        {
-          from: {
-            lte: values.to,
-          },
-        },
-        {
-          to: {
-            gte: values.from,
-          },
-        },
-      ],
-    },
-  });
+  // const overlappingBooking = await prisma.booking.findFirst({
+  //   where: {
+  //     roomId: room.id,
+  //     AND: [
+  //       {
+  //         from: {
+  //           lte: values.to,
+  //         },
+  //       },
+  //       {
+  //         to: {
+  //           gte: values.from,
+  //         },
+  //       },
+  //     ],
+  //   },
+  // });
 
   // Check for overlapping bookings
   // const overbookedRoom = await prisma.room.findFirst({
