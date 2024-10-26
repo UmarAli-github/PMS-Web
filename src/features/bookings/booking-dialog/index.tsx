@@ -1,4 +1,3 @@
-import { Room } from '@prisma/client';
 import dayjs from 'dayjs';
 import React from 'react';
 
@@ -10,13 +9,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
+import { UserSelection } from '../bookings.types';
 import { BookingForm } from './booking-form';
 
 interface BookingDialogProps {
-  userSelection: {
-    room: Room | null;
-    date: Date | null;
-  };
+  userSelection: UserSelection;
   handleOpenChange: (isOpen: boolean) => void;
 }
 
@@ -25,8 +22,8 @@ export const BookingDialog = ({
   handleOpenChange,
 }: BookingDialogProps) => {
   const isOpen = React.useMemo(
-    () => userSelection.room !== null && userSelection.date !== null,
-    [userSelection.room, userSelection.date]
+    () => userSelection.bed !== null && userSelection.date !== null,
+    [userSelection.bed, userSelection.date]
   );
 
   const closeDialog = React.useCallback(() => {
@@ -39,19 +36,12 @@ export const BookingDialog = ({
         <DialogHeader>
           <DialogTitle>Enter the booking details</DialogTitle>
           <DialogDescription>
-            {userSelection.room?.name} on{' '}
+            {userSelection.bed?.name} on{' '}
             {dayjs(userSelection.date).format('DD/MM/YYYY')}
           </DialogDescription>
           <BookingForm
             closeDialog={closeDialog}
-            userSelection={{
-              room: userSelection.room ?? {
-                id: 0,
-                name: '',
-                capacity: 0,
-              },
-              date: userSelection.date ?? new Date(),
-            }}
+            userSelection={userSelection}
           />
         </DialogHeader>
       </DialogContent>

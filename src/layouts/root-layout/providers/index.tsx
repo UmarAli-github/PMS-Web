@@ -12,7 +12,7 @@ export const RootLayoutProviders = ({ children }: RootLayoutProvidersProps) => {
   return (
     <QueryClientProvider>
       <ThemeProvider>
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider delayDuration={100}>{children}</TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

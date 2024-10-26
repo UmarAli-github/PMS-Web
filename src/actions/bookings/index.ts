@@ -4,21 +4,21 @@ import { BookingFormSchema } from '@/features/bookings/booking-dialog/booking-fo
 import { prisma } from '@/lib/db';
 
 export const createBookingAction = async (values: BookingFormSchema) => {
-  const { room, ...restValues } = values;
+  const { bed, payment, ...restValues } = values;
 
   // Check for overlapping bookings
   const overlappingBooking = await prisma.booking.findFirst({
     where: {
-      roomId: room.id,
+      bedId: bed.id,
       AND: [
         {
           from: {
-            lte: values.to,
+            lt: values.to,
           },
         },
         {
           to: {
-            gte: values.from,
+            gt: values.from,
           },
         },
       ],
@@ -30,15 +30,27 @@ export const createBookingAction = async (values: BookingFormSchema) => {
       'There is an existing booking that overlaps with the requested time.'
     );
 
-  await prisma.booking.create({
+  const booking = await prisma.booking.create({
     data: {
       ...restValues,
-      roomId: room.id,
+      bedId: bed.id,
+    },
+  });
+
+  await prisma.payment.create({
+    data: {
+      ...payment,
+      bookingId: booking.id,
     },
   });
 };
 
 export const deleteBookingAction = async (bookingId: number) => {
+  await prisma.payment.delete({
+    where: {
+      bookingId,
+    },
+  });
   await prisma.booking.delete({
     where: {
       id: bookingId,

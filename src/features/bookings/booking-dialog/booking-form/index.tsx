@@ -1,7 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Room } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
@@ -28,14 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { BOOKING_STATUS } from '@/constants/bookings';
 
+import { UserSelection } from '../../bookings.types';
 import { BookingFormSchema, bookingFormSchema } from './booking-form.utils';
 
 interface BookingFormProps {
-  userSelection: {
-    room: Room;
-    date: Date;
-  };
+  userSelection: UserSelection;
   closeDialog: () => void;
 }
 export const BookingForm = ({
@@ -46,9 +44,13 @@ export const BookingForm = ({
   const form = useForm<BookingFormSchema>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
-      room: userSelection.room,
-      from: userSelection.date,
+      bed: userSelection.bed ?? {
+        id: 0,
+        name: '',
+      },
+      from: userSelection.date ?? new Date(),
     },
+    mode: 'onChange',
   });
   const addBookingMutation = useMutation({
     mutationFn: createBookingAction,
@@ -71,13 +73,13 @@ export const BookingForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <FormField
             control={form.control}
-            name="room"
+            name="bed"
             render={({ field }) => (
-              <FormItem className="col-span-2">
-                <FormLabel>Room</FormLabel>
+              <FormItem>
+                <FormLabel>Room-Bed</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Room name"
@@ -116,9 +118,7 @@ export const BookingForm = ({
                 <DatePicker
                   date={field.value}
                   setDate={field.onChange}
-                  fromDate={dayjs(form.getValues('from'))
-                    .add(1, 'day')
-                    .toDate()}
+                  fromDate={dayjs(form.getValues('from')).toDate()}
                 />
                 <FormMessage />
               </FormItem>
@@ -185,25 +185,6 @@ export const BookingForm = ({
 
           <FormField
             control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price (Currency)</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Invoice amount for booking"
-                    type="number"
-                    {...field}
-                  />
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="idType"
             render={({ field }) => (
               <FormItem>
@@ -239,6 +220,116 @@ export const BookingForm = ({
                 <FormLabel>ID#</FormLabel>
                 <FormControl>
                   <Input placeholder="Identification Number" {...field} />
+                </FormControl>
+
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select booking status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {(
+                      Object.keys(
+                        BOOKING_STATUS
+                      ) as (keyof typeof BOOKING_STATUS)[]
+                    ).map((key) => {
+                      const { color: backgroundColor, label } = BOOKING_STATUS[
+                        key
+                      ] ?? {
+                        color: 'gray',
+                        label: 'Unknown',
+                      };
+
+                      return (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="size-2 shrink-0 grow-0 rounded-full"
+                              style={{
+                                backgroundColor,
+                              }}
+                            />
+                            <div>{label}</div>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="payment.cash"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Payment (Cash)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Amount paid via cash"
+                    type="number"
+                    {...field}
+                  />
+                </FormControl>
+
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="payment.card"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Payment (Card)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Amount paid via card"
+                    type="number"
+                    {...field}
+                  />
+                </FormControl>
+
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="payment"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Total Payment</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Amount paid via cash"
+                    type="number"
+                    disabled
+                    value={
+                      (Number(field.value.card) || 0) +
+                      (Number(field.value.cash) || 0)
+                    }
+                  />
                 </FormControl>
 
                 <FormMessage />

@@ -2,21 +2,24 @@ import dayjs from 'dayjs';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
-import { sanitize } from '@/utils/sanitize';
+import { getAllBookings } from '@/services/bookings';
 
 import { BookingsDataTable } from './bookings-data-table';
 
 export const Dashboard = async () => {
-  const bookings = await prisma.booking.findMany().then(sanitize);
-  const totalRevenue = await prisma.booking.aggregate({
+  const bookings = await getAllBookings();
+  const totalRevenue = await prisma.payment.aggregate({
     _sum: {
-      price: true,
+      card: true,
+      cash: true,
     },
   });
 
   const totalBookings = await prisma.booking.count();
 
   const totalRooms = await prisma.room.count();
+
+  const totalBeds = await prisma.bed.count();
 
   const todaysActiveBooking = await prisma.booking.findMany({
     where: {
@@ -37,14 +40,15 @@ export const Dashboard = async () => {
 
   return (
     <div defaultValue="booking" className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {totalRevenue._sum.price?.toString()}
+              {Number(totalRevenue._sum?.card ?? 0) +
+                Number(totalRevenue._sum?.cash ?? 0)}
             </div>
           </CardContent>
         </Card>
@@ -55,7 +59,7 @@ export const Dashboard = async () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalBookings.toString()}</div>
+            <div className="text-2xl font-bold">{`${totalBookings}`}</div>
           </CardContent>
         </Card>
         <Card>
@@ -63,7 +67,15 @@ export const Dashboard = async () => {
             <CardTitle className="text-sm font-medium">Total Rooms</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRooms.toString()}</div>
+            <div className="text-2xl font-bold">{`${totalRooms}`}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Beds</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{`${totalBeds}`}</div>
           </CardContent>
         </Card>
         <Card>
