@@ -2,7 +2,6 @@
 
 'use client';
 
-import { Booking } from '@prisma/client';
 import {
   CaretSortIcon,
   ChevronDownIcon,
@@ -45,11 +44,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ABSOLUTE_ROUTES } from '@/constants/routes';
+import { GetAllBookingsResponse } from '@/services/bookings';
 
 import { DeleteBookingModal } from './delete-booking-modal';
 
 interface BookingsDataTableProps {
-  bookings: Booking[];
+  bookings: GetAllBookingsResponse;
 }
 
 export const BookingsDataTable = ({ bookings }: BookingsDataTableProps) => {
@@ -65,7 +65,7 @@ export const BookingsDataTable = ({ bookings }: BookingsDataTableProps) => {
     setBookingId(bookingIdArg);
   };
 
-  const columns: ColumnDef<Booking>[] = React.useMemo(
+  const columns: ColumnDef<GetAllBookingsResponse[number]>[] = React.useMemo(
     () => [
       {
         accessorKey: 'id',
@@ -73,9 +73,9 @@ export const BookingsDataTable = ({ bookings }: BookingsDataTableProps) => {
         cell: ({ row }) => <div>{row.getValue('id')}</div>,
       },
       {
-        accessorKey: 'roomId',
-        header: 'Room ID',
-        cell: ({ row }) => <div>{row.getValue('roomId')}</div>,
+        accessorKey: 'bed.name',
+        header: 'Room-Bed',
+        cell: ({ row }) => <div>{row.original.bed.name}</div>,
       },
       {
         accessorKey: 'name',
@@ -121,11 +121,6 @@ export const BookingsDataTable = ({ bookings }: BookingsDataTableProps) => {
         cell: ({ row }) => <div>{row.getValue('gender')}</div>,
       },
       {
-        accessorKey: 'price',
-        header: 'Price',
-        cell: ({ row }) => <div>{row.getValue('price')}</div>,
-      },
-      {
         accessorKey: 'idType',
         header: 'ID Type',
         cell: ({ row }) => <div>{row.getValue('idType')}</div>,
@@ -134,6 +129,16 @@ export const BookingsDataTable = ({ bookings }: BookingsDataTableProps) => {
         accessorKey: 'idNo',
         header: 'ID No',
         cell: ({ row }) => <div>{row.getValue('idNo')}</div>,
+      },
+      {
+        accessorKey: 'payment',
+        header: 'Payment(Cash+Card)',
+        cell: ({ row }) => (
+          <div>
+            {Number(row.original.payment?.card ?? 0) +
+              Number(row.original.payment?.cash ?? 0)}
+          </div>
+        ),
       },
       {
         id: 'actions',

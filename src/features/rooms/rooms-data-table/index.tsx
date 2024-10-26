@@ -2,7 +2,6 @@
 
 'use client';
 
-import { Room } from '@prisma/client';
 import {
   CaretSortIcon,
   ChevronDownIcon,
@@ -42,12 +41,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { GetAllRoomsResponse } from '@/services/rooms';
 
 import { AddRoomModal } from './add-room-modal';
 import { DeleteRoomModal } from './delete-room-modal';
 
 interface RoomsDataTableProps {
-  rooms: Room[];
+  rooms: GetAllRoomsResponse;
 }
 
 export const RoomsDataTable = ({ rooms }: RoomsDataTableProps) => {
@@ -63,7 +63,7 @@ export const RoomsDataTable = ({ rooms }: RoomsDataTableProps) => {
     setRoomId(roomIdArg);
   };
 
-  const columns: ColumnDef<Room>[] = React.useMemo(
+  const columns: ColumnDef<GetAllRoomsResponse[number]>[] = React.useMemo(
     () => [
       {
         accessorKey: 'id',
@@ -91,9 +91,11 @@ export const RoomsDataTable = ({ rooms }: RoomsDataTableProps) => {
       {
         accessorKey: 'capacity',
         header: 'Capacity',
-        cell: ({ row }) => (
-          <div className="capitalize">{row.getValue('capacity')}</div>
-        ),
+        cell: ({ row }) => {
+          return (
+            <div className="capitalize">{row.original.beds.length ?? 0}</div>
+          );
+        },
       },
       {
         id: 'actions',
